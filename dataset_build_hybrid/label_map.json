@@ -1,0 +1,39 @@
+{
+  "label_map": {
+    "Empty": 0,
+    "LeftDown": 1,
+    "LeftMid": 2,
+    "LeftUp": 3,
+    "MiddleDown": 4,
+    "MiddleUp": 5,
+    "RightDown": 6,
+    "RightMid": 7,
+    "RightUp": 8
+  },
+  "inv_label_map": {
+    "0": "Empty",
+    "1": "LeftDown",
+    "2": "LeftMid",
+    "3": "LeftUp",
+    "4": "MiddleDown",
+    "5": "MiddleUp",
+    "6": "RightDown",
+    "7": "RightMid",
+    "8": "RightUp"
+  },
+  "label_normalization": {
+    "Empty": "Empty",
+    "Empty_Pred": "Empty",
+    "LeftDown": "LeftDown",
+    "LeftDown_Far": "LeftDown",
+    "LeftMid": "LeftMid",
+    "LeftUp": "LeftUp",
+    "LeftUp_Near": "LeftUp",
+    "LeftUp_Pred": "LeftUp",
+    "MiddleDown": "MiddleDown",
+    "MiddleUp": "MiddleUp",
+    "RightDown": "RightDown",
+    "RightMid": "RightMid",
+    "RightUp": "RightUp"
+  }
+}
