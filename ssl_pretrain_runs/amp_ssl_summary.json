@@ -14,6 +14,6 @@
   "temperature": 0.1,
   "proj_dim": 128,
   "embed_dim": 256,
-  "num_ssl_rows": 1347,
+  "num_ssl_rows": 1724,
   "seed": 42
 }

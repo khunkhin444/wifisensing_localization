@@ -23,17 +23,21 @@
   },
   "label_normalization": {
     "Empty": "Empty",
-    "Empty_Pred": "Empty",
     "LeftDown": "LeftDown",
-    "LeftDown_Far": "LeftDown",
     "LeftMid": "LeftMid",
     "LeftUp": "LeftUp",
-    "LeftUp_Near": "LeftUp",
-    "LeftUp_Pred": "LeftUp",
     "MiddleDown": "MiddleDown",
     "MiddleUp": "MiddleUp",
     "RightDown": "RightDown",
     "RightMid": "RightMid",
     "RightUp": "RightUp"
-  }
+  },
+  "unlabeled_pred_folders": [
+    "Corner",
+    "Empty_Pred",
+    "LeftDown_Far",
+    "LeftUp_Near",
+    "LeftUp_Pred",
+    "Wall"
+  ]
 }
