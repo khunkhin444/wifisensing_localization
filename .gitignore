@@ -1,0 +1,19 @@
+# ignore everything
+*
+
+# keep notebooks
+!*.ipynb
+!*.m
+# keep model folders and results
+!dataset_build_hybrid*/
+!dataset_build_hybrid/**
+!hybrid_**/
+!hybrid_*/**
+!ssl_**/
+!ssl_*/**
+# keep models
+!models/
+!models/**
+
+!.gitignore
+!README.md

@@ -1,0 +1,25 @@
+{
+  "data_root": "/home/tonyliao/Location_AMP",
+  "train_dir": "/home/tonyliao/Location_AMP/Train",
+  "pred_dir": "/home/tonyliao/Location_AMP/Pred",
+  "use_raw_amp": true,
+  "use_avecsi": true,
+  "use_phase": true,
+  "train_labeled_n": 1774,
+  "train_unlabeled_n": 761,
+  "pred_support_n": 60,
+  "pred_query_n": 526,
+  "num_classes": 9,
+  "labels": {
+    "Empty": 0,
+    "LeftDown": 1,
+    "LeftMid": 2,
+    "LeftUp": 3,
+    "MiddleDown": 4,
+    "MiddleUp": 5,
+    "RightDown": 6,
+    "RightMid": 7,
+    "RightUp": 8
+  },
+  "seed": 42
+}
