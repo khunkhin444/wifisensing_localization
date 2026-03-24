@@ -33,6 +33,7 @@
     "RightUp": "RightUp"
   },
   "unlabeled_pred_folders": [
+    "Center",
     "Corner",
     "Empty_Pred",
     "LeftDown_Far",

@@ -7,7 +7,7 @@
   "use_phase": true,
   "train_labeled_n": 1774,
   "train_unlabeled_n": 761,
-  "pred_query_n": 843,
+  "pred_query_n": 990,
   "num_classes": 9,
   "labels": {
     "Empty": 0,
