@@ -1,114 +1,303 @@
-# WiFi Sensing Localization
+# localization_wifi_sensing
 
-A notebook-based pipeline for indoor localization from WiFi sensing data. The project builds a hybrid dataset that combines angle/phase features with amplitude-derived fingerprints, pretrains an amplitude encoder with self-supervision, trains a supervised hybrid model, fine-tunes it on a target domain, and performs confidence-weighted inference with session-level aggregation.
+Passive Wi-Fi sensing pipeline for **through-wall indoor localization** using CSI-derived amplitude and phase features.
 
-## Repository layout
-
-| File / directory | Purpose |
-| --- | --- |
-| `01_build_dataset.ipynb` | Scans the raw `Train/` and `Pred/` domains, normalizes labels, and exports hybrid `.npz` datasets for downstream stages. |
-| `02_ssl_pretrain.ipynb` | Self-supervised pretraining for the amplitude branch encoder. |
-| `03_supervised_source_train.ipynb` | Supervised source-domain training for the hybrid AoA + amplitude model. |
-| `04_transfer_finetune.ipynb` | Target-domain transfer learning / fine-tuning using support and query data. |
-| `05_kde_infer_aggregate.ipynb` | Final window-level inference plus confidence-weighted session aggregation. |
-| `dataset_build_hybrid/` | Example dataset artifacts and label mapping produced by notebook 1. |
-| `ssl_pretrain_runs/` | Example self-supervised training history and summary JSON files. |
-| `hybrid_train_runs/` | Example supervised training summaries and class-center outputs. |
-| `hybrid_transfer_runs/` | Example transfer-learning histories and evaluation summaries. |
-| `hybrid_infer_runs/` | Example inference metrics after aggregation. |
+This repository contains a staged notebook workflow for:
+- building paired A/B-view CSI datasets,
+- self-supervised pretraining of an amplitude encoder,
+- supervised hybrid localization training,
+- inference, aggregation, and evaluation on unseen sessions.
 
 ## Pipeline overview
 
-The notebooks are intended to be run in order:
+The current workflow is organized into four main stages.
 
-1. **Build the dataset** with `01_build_dataset.ipynb`.
-   - Reads raw data from `Train/` and `Pred/` folders under a configurable `DATA_ROOT`.
-   - Normalizes occupancy / position labels.
-   - Produces labeled, unlabeled, support, and query splits for the hybrid pipeline.
-2. **Pretrain the amplitude encoder** with `02_ssl_pretrain.ipynb`.
-   - Uses unlabeled training data and optionally target-domain support/query data.
-   - Learns an amplitude representation before supervised training.
-3. **Train the source-domain hybrid model** with `03_supervised_source_train.ipynb`.
-   - Combines geometry-oriented phase/AoA features with the amplitude branch.
-   - Optimizes multiple objectives such as presence, class, AoA, delta, and final losses.
-4. **Fine-tune on the target domain** with `04_transfer_finetune.ipynb`.
-   - Starts from the best supervised model.
-   - Adapts the hybrid model using target-domain support data and evaluates on query samples.
-5. **Run inference and aggregate predictions** with `05_kde_infer_aggregate.ipynb`.
-   - Generates window-level predictions.
-   - Applies confidence-based weighting and session-level aggregation.
+### Stage 0 — CSI window building
+Input CSI logs are converted into fixed windows with metadata.
 
-## Data and labels
+Expected outputs include per-window tensors such as:
+- amplitude windows,
+- phase windows,
+- optional AveCSI-normalized amplitude,
+- metadata fields such as label, session, source file, and pair/view information.
 
-The sample artifacts in `dataset_build_hybrid/dataset_summary.json` show the expected class set and split sizes for one run:
+Reference script:
+- `0_csi_build_windows.txt`
 
-- Classes: `Empty`, `LeftDown`, `LeftMid`, `LeftUp`, `MiddleDown`, `MiddleUp`, `RightDown`, `RightMid`, `RightUp`
-- Split sizes:
-  - `train_labeled_n`: 1774
-  - `train_unlabeled_n`: 761
-  - `pred_support_n`: 60
-  - `pred_query_n`: 526
+### Stage 1 — Dataset building
+Build paired A/B samples and save dataset manifests and compressed NPZ files.
 
-All notebooks use a configurable `DATA_ROOT` that currently points to `/home/tonyliao/Location_AMP` in the saved examples, so you will need to update those paths for your environment.
+Notebook:
+- `01_build_dataset.ipynb`
 
-## Environment requirements
+Main outputs:
+- `dataset_build_hybrid/train_labeled.npz`
+- `dataset_build_hybrid/train_unlabeled.npz` (optional)
+- `dataset_build_hybrid/pred_support.npz`
+- `dataset_build_hybrid/pred_query.npz`
+- `dataset_build_hybrid/label_map.json`
+- `dataset_build_hybrid/dataset_summary.json`
 
-The notebooks import the following Python packages:
+Key notes:
+- supports paired A/B folders,
+- supports amplitude and phase branches,
+- supports AveCSI-based amplitude input,
+- keeps metadata needed for later aggregation and analysis.
 
-- `numpy`
-- `pandas`
-- `scipy`
-- `scikit-learn`
-- `matplotlib`
-- `tensorflow`
-- `IPython`
-- Standard-library modules such as `json`, `math`, `os`, `pathlib`, `random`, and `re`
+### Stage 2 — SSL pretraining for amplitude encoder
+Pretrain the amplitude branch using self-supervised contrastive learning.
 
-A typical setup could look like this:
+Notebook:
+- `02_ssl_pretrain.ipynb`
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install numpy pandas scipy scikit-learn matplotlib tensorflow ipython jupyter
+Main outputs:
+- `ssl_pretrain_runs/amp_ssl_encoder_best.keras`
+- `ssl_pretrain_runs/amp_ssl_encoder_final.keras`
+- `ssl_pretrain_runs/amp_ssl_projector_final.keras`
+- `ssl_pretrain_runs/amp_ssl_history.json`
+- `ssl_pretrain_runs/amp_ssl_summary.json`
+
+Default behavior in the current notebook:
+- uses `train_unlabeled.npz` if available,
+- otherwise can fall back to labeled training data with labels ignored,
+- can optionally include `pred_support` and `pred_query` in SSL.
+
+### Stage 3 — Supervised hybrid training
+Train a hybrid model that fuses amplitude and phase inputs.
+
+Notebook:
+- `03_supervised_source_train.ipynb`
+
+Main outputs:
+- `hybrid_train_runs/hybrid_model_best.keras`
+- `hybrid_train_runs/hybrid_model_final.keras`
+- `hybrid_train_runs/hybrid_train_history.json`
+- `hybrid_train_runs/hybrid_train_summary.json`
+- `hybrid_train_runs/class_centers.json`
+
+Model structure:
+- amplitude encoder initialized from SSL,
+- phase branch for geometry/phase-guided features,
+- multi-head outputs including:
+  - presence,
+  - anchor/class prediction,
+  - geometry/AoA-related XY,
+  - amplitude correction delta,
+  - final fused XY.
+
+### Stage 4 — Inference and aggregation
+Run per-window prediction on unseen sessions, compute confidence weights, aggregate session-level coordinates, and visualize results.
+
+Notebook:
+- `04_kde_infer_aggregate.ipynb`
+
+Main outputs:
+- `hybrid_infer_runs/*.csv`
+- `hybrid_infer_runs/*.json`
+- session plots and evaluation figures
+
+The inference notebook currently supports:
+- per-window prediction,
+- confidence weighting using score or softmax margin,
+- presence-aware weighting,
+- session-level aggregation,
+- continuous-coordinate evaluation,
+- nearest-anchor evaluation for coarse localization reporting.
+
+---
+
+## Data assumptions
+
+The pipeline assumes a passive Wi-Fi sensing setting with:
+- stationary or near-stationary human presence,
+- paired A/B receiver viewpoints,
+- anchor-based supervised training labels,
+- optional unseen prediction sessions for evaluation.
+
+Typical anchor labels include:
+- `Empty`
+- `LeftDown`
+- `LeftMid`
+- `LeftUp`
+- `MiddleDown`
+- `MiddleUp`
+- `RightDown`
+- `RightMid`
+- `RightUp`
+
+Unseen sessions may include cases such as:
+- `LeftUp_Pred`
+- `LeftUp_Near`
+- `LeftDown_Far`
+- `Center`
+- `Wall`
+- `Empty_Pred`
+- `Corner`
+---
+
+## Recommended execution order
+
+1. Run Stage 0 to build clean CSI windows.
+2. Run `01_build_dataset.ipynb`.
+3. Run `02_ssl_pretrain.ipynb`.
+4. Run `03_supervised_source_train.ipynb`.
+5. Run `04_kde_infer_aggregate.ipynb`.
+
+---
+
+## Important implementation notes
+
+### 1. Check model path consistency
+`03_supervised_source_train.ipynb` saves the trained model to:
+- `hybrid_train_runs/`
+
+But `04_kde_infer_aggregate.ipynb` is configured to load from:
+- `hybrid_transfer_runs/`
+
+If no separate transfer-learning stage is used, update the inference notebook so that `MODEL_PATH` points to the trained model actually produced by Stage 3.
+
+Recommended fix:
+```python
+TRAIN_DIR = DATA_ROOT / "hybrid_train_runs"
+MODEL_PATH = TRAIN_DIR / "hybrid_model_best.keras"
 ```
 
-> Note: TensorFlow GPU support is referenced in the notebooks, so a CUDA-enabled environment may be helpful if you plan to train the models at scale.
+### 2. Be explicit about the SSL regime
+The current SSL notebook can include `pred_support` and `pred_query`.
+This changes the evaluation setting.
 
-## Outputs and example results
+Use one of these clearly:
+- **strict inductive**: do not include target query data in SSL,
+- **transductive / UDA-style**: include target support or query, but report it clearly.
 
-This repository already includes example summary artifacts from a completed run:
+### 3. Continuous error vs nearest-anchor evaluation
+Two evaluation modes are useful:
 
-- **SSL pretraining** (`ssl_pretrain_runs/amp_ssl_summary.json`)
-  - 100 epochs
-  - Batch size 32
-  - Projection dimension 128
-  - Embedding dimension 256
-- **Supervised hybrid training** (`hybrid_train_runs/hybrid_train_summary.json`)
-  - 100 epochs
-  - Batch size 16
-  - Multi-task loss weights for presence, class, AoA, delta, and final outputs
-- **Transfer fine-tuning** (`hybrid_transfer_runs/transfer_summary.json`)
-  - Query set size: 526
-  - Mean XY error: about 0.1604
-  - Median XY error: about 0.1404
-  - Class accuracy: 1.0
-- **Final inference aggregation** (`hybrid_infer_runs/infer_summary.json`)
-  - Window class accuracy: 1.0
-  - Session mean error (weighted): about 0.1357
-  - Confidence mode: `exp_score`
+- **Continuous localization error**: Euclidean distance between predicted XY and GT XY.
+- **Nearest-anchor evaluation**: snap the predicted point to the closest anchor center and report coarse zone-level correctness.
 
-These metrics are useful as a reference point when checking whether a rerun is behaving as expected.
+Nearest-anchor evaluation can look better in tables, but it should be reported as a secondary metric rather than replacing continuous localization accuracy.
 
-## How to use this repository
+---
 
-1. Open the notebooks in Jupyter Lab or Jupyter Notebook.
-2. Update `DATA_ROOT` and any other path-related configuration cells to point at your dataset location.
-3. Run the notebooks sequentially from `01_build_dataset.ipynb` through `05_kde_infer_aggregate.ipynb`.
-4. Inspect the generated JSON summaries and model artifacts inside the corresponding output folders.
-5. Compare your metrics against the included example summaries.
+## Current limitations
 
-## Notes and caveats
+Based on the current pipeline and recent results:
+- sessions such as `LeftUp_Pred` and `Empty_Pred` are relatively stable,
+- `Wall` and `Center` remain difficult,
+- snapping predictions to nearest anchors does not fix sessions that are already biased toward the wrong anchor,
+- this suggests the main problem is not only aggregation but also **systematic per-window prediction bias** and **insufficient anchor support**.
 
-- The repository is notebook-first; there is no packaged Python module or CLI yet.
-- Paths in the saved notebook configs are environment-specific and should be treated as examples, not defaults you can rely on.
-- Because the project depends on local dataset folders that are not committed here, reproducing the full pipeline requires access to the original WiFi sensing data.
+---
+
+## Suggestions to improve results
+
+### Highest-priority changes
+
+#### 1. Fix inference-to-training mismatch first
+Before changing the model, make sure inference loads the correct trained checkpoint.
+
+Why:
+- loading the wrong directory or a stale transfer model can invalidate all comparisons.
+
+#### 2. Add more anchors near failure regions
+Your hardest cases are not solved by snapping because the model is still choosing the wrong region.
+
+Recommended:
+- add anchors near `Wall`,
+- add one or more anchors near `Center`,
+- add wall-adjacent and out-of-grid support points if those are part of the target task.
+
+Why:
+- current anchors mainly cover an internal grid,
+- sessions outside or near the boundary are under-supported.
+
+#### 3. Strengthen the phase branch rather than only changing aggregation
+Recent behavior suggests the issue is upstream of aggregation.
+
+Recommended:
+- use phase-difference features between antennas,
+- use sanitized phase slope / detrended phase features,
+- add phase reliability features such as phase variance or consistency,
+- treat the phase branch as a robust phase-feature-guided branch rather than claiming explicit AoA unless AoA is truly estimated.
+
+#### 4. Use robust session aggregation
+Weighted mean is simple but still sensitive to biased windows.
+
+Try:
+- weighted median of X and Y,
+- trimmed weighted mean,
+- Huber-style robust aggregation,
+- outlier rejection before session fusion.
+
+Why:
+- if a minority of windows are badly shifted, robust aggregation is often better than plain mean.
+
+#### 5. Separate “presence confidence” from “localization confidence”
+The current weighting multiplies by presence probability.
+This can suppress empty sessions well, but it may not be the right confidence signal for localization quality.
+
+Try:
+- a localization uncertainty head,
+- class-margin-only weighting,
+- quality weighting based on window stability features,
+- calibrating presence and localization weights separately.
+
+### Medium-priority changes
+
+#### 6. Make validation session-aware
+Ensure train/validation splits are session-level, not random-window-level.
+
+Why:
+- window leakage can make validation look better than true generalization.
+
+#### 7. Clarify target adaptation usage
+If target data are from the same room but only different positions, prioritize:
+- denser anchors,
+- better phase robustness,
+- better confidence gating.
+
+If environment/setup changes, then target adaptation becomes more useful.
+
+#### 8. Add anchor-prototype diagnostics
+For each session, log:
+- nearest anchor to weighted XY,
+- class-majority anchor,
+- distance to top-2 anchor centers,
+- per-window class entropy,
+- per-session variance.
+
+This helps distinguish:
+- ambiguous sessions,
+- out-of-support sessions,
+- confidently wrong sessions.
+
+---
+
+## Suggested immediate next changes
+
+If you want the fastest path to better results, do these first:
+
+1. update `MODEL_PATH` in inference to match Stage 3 output,
+2. keep continuous error as the primary metric,
+3. keep nearest-anchor error as a secondary metric,
+4. add 1–3 anchors near `Wall` and `Center`,
+5. replace weighted mean with weighted median or trimmed weighted mean,
+6. refine the phase branch and confidence design before changing the whole architecture.
+
+---
+
+## Repository status summary
+
+Current repository status is best described as:
+- a staged research pipeline,
+- optimized for notebook-based experimentation,
+- suitable for passive Wi-Fi sensing localization experiments,
+- still evolving in evaluation design and model calibration.
+
+For publication-quality reporting, document clearly:
+- dataset split policy,
+- whether target query data are used in SSL,
+- whether evaluation is continuous or nearest-anchor based,
+- which checkpoint was used for inference,
+- exact anchor coordinates and units.
