@@ -141,7 +141,7 @@ Unseen sessions may include cases such as:
 2. Run `01_build_dataset.ipynb`.
 3. Run `02_ssl_pretrain.ipynb`.
 4. Run `03_supervised_source_train.ipynb`.
-5. Run `04_kde_infer_aggregate.ipynb`.
+5. Run `04_01_kde_infer_aggregate.ipynb`. or `04_02_kde_infer_aggregate_nearest_anchor_eval.ipynb`
 
 ---
 
