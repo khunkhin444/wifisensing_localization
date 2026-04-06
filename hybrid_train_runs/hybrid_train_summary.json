@@ -1,7 +1,7 @@
 {
-  "train_labeled_npz": "/home/tonyliao/Location_AMP/dataset_build_hybrid/train_labeled.npz",
-  "pred_support_npz": "/home/tonyliao/Location_AMP/dataset_build_hybrid/pred_support.npz",
-  "amp_ssl_encoder_path": "/home/tonyliao/Location_AMP/ssl_pretrain_runs/amp_ssl_encoder_best.keras",
+  "train_labeled_npz": "/home/tonyliao/Location/dataset_build_hybrid/train_labeled.npz",
+  "pred_support_npz": "/home/tonyliao/Location/dataset_build_hybrid/pred_support.npz",
+  "amp_ssl_encoder_path": "/home/tonyliao/Location/ssl_pretrain_runs/amp_ssl_encoder_best.keras",
   "use_pred_support_as_val": false,
   "target_t": 256,
   "target_s": 41,

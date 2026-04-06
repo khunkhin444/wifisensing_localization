@@ -1,7 +1,7 @@
 {
-  "data_root": "/home/tonyliao/Location_AMP",
-  "train_dir": "/home/tonyliao/Location_AMP/Train",
-  "pred_dir": "/home/tonyliao/Location_AMP/Pred",
+  "data_root": "/home/tonyliao/Location",
+  "train_dir": "/home/tonyliao/Location/Train",
+  "pred_dir": "/home/tonyliao/Location/Pred",
   "use_raw_amp": true,
   "use_avecsi": true,
   "use_phase": true,
