@@ -1,0 +1,8 @@
+Session,GT Anchor,Pred Anchor,Cont. Error (m),Snapped Error (m),Anchor Correct
+Center,LeftMid,LeftDown,1.515,2.236,No
+Corner,RightUp,LeftMid,5.388,5.657,No
+Empty_Pred,Empty,Empty,0.175,0.0,Yes
+LeftDown_Far,LeftDown,LeftDown,2.924,2.828,Yes
+LeftUp_Near,LeftUp,LeftUp,0.557,0.5,Yes
+LeftUp_Pred,LeftUp,LeftUp,0.136,0.0,Yes
+Wall,RightDown,LeftMid,4.121,4.123,No

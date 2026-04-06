@@ -14,6 +14,10 @@
 # keep models
 !models/
 !models/**
+# keep results
+!session_**
+!nearest_anchor_figures/
+!nearest_anchor_figures/**
 
 !.gitignore
 !README.md
