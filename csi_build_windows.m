@@ -1,7 +1,11 @@
 function csi_build_windows(varargin)
 % Build clean CSI windows (amplitude + phase) from one or more PicoScenes .csi files.
 %
-% Exports per-window .npy tensors and .mat metadata:
+% Exports per-window .npy tensors and .mat metadata.
+% Metadata includes receiver-aware fields for domain-safe downstream splits:
+%   receiver_domain, session_id, anchor_label, source_file, window_index
+%
+% Exports:
 %   <out>/<basename>/
 %       amp_window_00001.npy      % [T_win x S_kept x A], float32
 %       ampn_window_00001.npy     % normalized amplitude, float32
@@ -555,9 +559,11 @@ for w = 1:numel(starts)
     end
 
     meta = struct();
-    meta.session_id   = base;
+    meta.session_id   = infer_session_id(base, fullpath);
     meta.window_index = exported;
     meta.source_file  = fullpath;
+    meta.receiver_domain = infer_receiver_domain(fullpath, base);
+    meta.anchor_label = infer_anchor_label(fullpath, base);
 
     % packet-based indexing
     meta.pkt_start_idx = idx(1);
@@ -885,4 +891,66 @@ fwrite(fid, uint16(numel(h)), 'uint16', 0, 'ieee-le');
 fwrite(fid, h, 'uint8');
 fwrite(fid, A, class(A), 0, 'ieee-le');
 fclose(fid);
+end
+
+
+%% ========================================================================
+function dom = infer_receiver_domain(fullpath, base)
+dom = "unknown";
+tokens = [string(fullpath), string(base)];
+for i = 1:numel(tokens)
+    t = lower(tokens(i));
+    if contains(t, filesep + "a" + filesep) || ~isempty(regexp(t, '(^|[_\-])a([_\-]|$)', 'once'))
+        dom = "A";
+        return;
+    end
+    if contains(t, filesep + "b" + filesep) || ~isempty(regexp(t, '(^|[_\-])b([_\-]|$)', 'once'))
+        dom = "B";
+        return;
+    end
+    hit = regexp(t, 'receiver[_\-]?(a|b)', 'tokens', 'once');
+    if ~isempty(hit)
+        dom = upper(string(hit{1}));
+        return;
+    end
+end
+end
+
+
+%% ========================================================================
+function sid = infer_session_id(base, fullpath)
+sid = string(base);
+p = strsplit(string(fullpath), filesep);
+for i = numel(p):-1:1
+    token = lower(strtrim(p{i}));
+    if token == "" || token == "." || token == ".."
+        continue;
+    end
+    if startsWith(token, "session") || startsWith(token, "sess")
+        sid = string(p{i});
+        return;
+    end
+end
+end
+
+
+%% ========================================================================
+function anchor = infer_anchor_label(fullpath, base)
+anchor = string(base);
+p = strsplit(string(fullpath), filesep);
+for i = numel(p):-1:1
+    token = strtrim(string(p{i}));
+    t = lower(token);
+    if token == "" || token == "." || token == ".."
+        continue;
+    end
+    if t == "a" || t == "b" || startsWith(t, "receiver")
+        continue;
+    end
+    if startsWith(t, "session") || startsWith(t, "sess")
+        continue;
+    end
+    anchor = token;
+    return;
+end
 end
