@@ -3,7 +3,7 @@
   "train_dir": "/home/tonyliao/Location/Train",
   "pred_dir": "/home/tonyliao/Location/Pred",
   "use_raw_amp": true,
-  "use_avecsi": true,
+  "use_avecsi": false,
   "use_phase": true,
   "train_labeled_n": 1774,
   "train_unlabeled_n": 761,

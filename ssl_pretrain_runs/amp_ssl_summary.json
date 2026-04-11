@@ -5,7 +5,7 @@
   "use_pred_support_in_ssl": true,
   "use_pred_query_in_ssl": true,
   "use_raw_amp": true,
-  "use_avecsi": true,
+  "use_avecsi": false,
   "target_t": 256,
   "target_s": 41,
   "batch_size": 32,
