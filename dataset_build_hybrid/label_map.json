@@ -1,44 +1,32 @@
 {
   "label_map": {
-    "Empty": 0,
-    "LeftDown": 1,
-    "LeftMid": 2,
-    "LeftUp": 3,
-    "MiddleDown": 4,
-    "MiddleUp": 5,
-    "RightDown": 6,
-    "RightMid": 7,
-    "RightUp": 8
+    "Corner_LeftDown": 0,
+    "Corner_LeftUp": 1,
+    "Corner_RightDown": 2,
+    "Corner_RightUp": 3,
+    "Empty": 4,
+    "LeftDown": 5,
+    "LeftMid": 6,
+    "LeftUp": 7,
+    "MiddleDown": 8,
+    "MiddleUp": 9,
+    "RightDown": 10,
+    "RightMid": 11,
+    "RightUp": 12
   },
   "inv_label_map": {
-    "0": "Empty",
-    "1": "LeftDown",
-    "2": "LeftMid",
-    "3": "LeftUp",
-    "4": "MiddleDown",
-    "5": "MiddleUp",
-    "6": "RightDown",
-    "7": "RightMid",
-    "8": "RightUp"
-  },
-  "label_normalization": {
-    "Empty": "Empty",
-    "LeftDown": "LeftDown",
-    "LeftMid": "LeftMid",
-    "LeftUp": "LeftUp",
-    "MiddleDown": "MiddleDown",
-    "MiddleUp": "MiddleUp",
-    "RightDown": "RightDown",
-    "RightMid": "RightMid",
-    "RightUp": "RightUp"
-  },
-  "unlabeled_pred_folders": [
-    "Center",
-    "Corner",
-    "Empty_Pred",
-    "LeftDown_Far",
-    "LeftUp_Near",
-    "LeftUp_Pred",
-    "Wall"
-  ]
+    "0": "Corner_LeftDown",
+    "1": "Corner_LeftUp",
+    "2": "Corner_RightDown",
+    "3": "Corner_RightUp",
+    "4": "Empty",
+    "5": "LeftDown",
+    "6": "LeftMid",
+    "7": "LeftUp",
+    "8": "MiddleDown",
+    "9": "MiddleUp",
+    "10": "RightDown",
+    "11": "RightMid",
+    "12": "RightUp"
+  }
 }

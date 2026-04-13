@@ -1,0 +1,19 @@
+{
+  "protocol": "single_receiver_ssl",
+  "strict_inductive": true,
+  "use_B_finetune_for_ssl": false,
+  "use_AB_joint_retrain_for_ssl": false,
+  "ssl_sources": [
+    "A_train"
+  ],
+  "used_target_eval_unseen_locations": false,
+  "train_windows": 2969,
+  "val_windows": 742,
+  "batch_size": 64,
+  "epochs": 200,
+  "learning_rate": 0.001,
+  "target_t": 256,
+  "target_s": 41,
+  "projection_dim": 128,
+  "temperature": 0.1
+}

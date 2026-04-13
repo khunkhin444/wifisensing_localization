@@ -1,24 +1,67 @@
 {
-  "data_root": "/home/tonyliao/Location",
-  "train_dir": "/home/tonyliao/Location/Train",
-  "pred_dir": "/home/tonyliao/Location/Pred",
-  "use_raw_amp": true,
-  "use_avecsi": false,
-  "use_phase": true,
-  "train_labeled_n": 1774,
-  "train_unlabeled_n": 761,
-  "pred_query_n": 990,
-  "num_classes": 9,
-  "labels": {
-    "Empty": 0,
-    "LeftDown": 1,
-    "LeftMid": 2,
-    "LeftUp": 3,
-    "MiddleDown": 4,
-    "MiddleUp": 5,
-    "RightDown": 6,
-    "RightMid": 7,
-    "RightUp": 8
+  "protocol": "pretrain_on_A__finetune_on_B__joint_retrain_on_AplusB__evaluate_unseen_locations_on_both_domains",
+  "single_receiver_samples_only": true,
+  "paired_AB_samples": false,
+  "fused_AB_input": false,
+  "seed": 42,
+  "A_val_ratio": 0.2,
+  "B_val_ratio": 0.2,
+  "target_eval_unseen_locations": [
+    "Center",
+    "Corner",
+    "Empty_Pred",
+    "LeftDown_Far",
+    "LeftUp_Near",
+    "LeftUp_Pred",
+    "Wall"
+  ],
+  "counts": {
+    "all_windows": 9632,
+    "A_all": 4745,
+    "B_all": 4887,
+    "A_train": 2969,
+    "A_val": 742,
+    "B_finetune": 3091,
+    "B_val": 771,
+    "A_eval_unseen_locations": 1034,
+    "B_eval_unseen_locations": 1025,
+    "target_eval_unseen_locations_all": 2059,
+    "AB_joint_retrain": 6060,
+    "AB_joint_val": 1513
   },
-  "seed": 42
+  "num_labels": 13,
+  "receiver_counts": {
+    "B": 4887,
+    "A": 4745
+  },
+  "label_counts_all": {
+    "MiddleUp": 594,
+    "Empty": 594,
+    "LeftDown": 594,
+    "Corner_LeftUp": 592,
+    "Corner_RightDown": 592,
+    "Corner_RightUp": 591,
+    "RightUp": 591,
+    "LeftUp": 590,
+    "Corner_LeftDown": 589,
+    "RightMid": 586,
+    "LeftMid": 570,
+    "MiddleDown": 565,
+    "RightDown": 525,
+    "LeftUp_Pred": 317,
+    "Empty_Pred": 300,
+    "Center": 295,
+    "LeftDown_Far": 295,
+    "LeftUp_Near": 293,
+    "Wall": 282,
+    "Corner": 277
+  },
+  "joint_retrain_receiver_counts": {
+    "B": 3091,
+    "A": 2969
+  },
+  "joint_val_receiver_counts": {
+    "B": 771,
+    "A": 742
+  }
 }
